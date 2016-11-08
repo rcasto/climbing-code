@@ -1,0 +1,28 @@
+{
+    "name": "WebTech",
+    "short_name": "WebTech",
+    "description": "Testing out some Web Tech",
+    "start_url": "/",
+    "display": "standalone",
+    "icons": [{
+        "src": "images/touch-icon-iphone.png",
+        "sizes": "60x60",
+        "type": "image/png"
+    }, {
+        "src": "images/touch-icon-iphone-retina.png",
+        "sizes": "120x120",
+        "type": "image/png"
+    }, {
+        "src": "images/touch-icon-ipad.png",
+        "sizes": "76x76",
+        "type": "image/png"
+    }, {
+        "src": "images/touch-icon-ipad-retina.png",
+        "sizes": "152x152",
+        "type": "image/png"
+    }, {
+        "src": "images/touch-icon-android.png",
+        "sizes": "144x144",
+        "type": "image/png"
+    }]
+}
