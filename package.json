@@ -4,6 +4,7 @@
   "description": "playing around with new web api's and tech",
   "main": "index.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Richie Casto",
