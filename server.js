@@ -4,8 +4,6 @@ var https = require('https');
 var fs = require('fs');
 var express = require('express');
 var lex = require('letsencrypt-express');
-// var leChallenge = require('le-challenge-fs');
-// var leStore = require('le-store-certbot');
 
 var config = require('./config.json');
 
