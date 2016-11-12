@@ -1,23 +1,13 @@
 var path = require('path');
 var http = require('http');
 var https = require('https');
-var fs = require('fs');
 var express = require('express');
-var lex = require('letsencrypt-express');
 
 var config = require('./config.json');
 
 var app = express();
-var httpPort = 8000 || 80;
-var httpsPort = 3000 || 443;
-
-// Let's Encrypt
-var lexConfig = lex.create({
-    server: 'staging',
-    email: config.email,
-    agreeTos: true,
-    approveDomains: [config.domain]
-});
+var httpPort = process.env.PORT || 3000;
+// var httpsPort = 3000 || 443;
 
 function redirectToSSL(req, res, next) {
     // /\/\.well-known\/acme-challenge\/[\w-]+/ - save in case
@@ -28,7 +18,7 @@ function redirectToSSL(req, res, next) {
 }
 
 var httpServer = http.createServer(app);
-var httpsServer = https.createServer(lexConfig.httpsOptions, lexConfig.middleware(app));
+// var httpsServer = https.createServer(lexConfig.httpsOptions, app);
 
 // Middleware
 app.use(function (req, res, next) {
@@ -54,6 +44,6 @@ httpServer.listen(httpPort, function () {
     console.log('Http server listening on port', httpPort);
 });
 
-httpsServer.listen(httpsPort, function () {
-    console.log('Https server listening on port', httpsPort);
-});
+// httpsServer.listen(httpsPort, function () {
+//     console.log('Https server listening on port', httpsPort);
+// });
