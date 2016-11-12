@@ -4,6 +4,8 @@
     "description": "Testing out some Web Tech",
     "start_url": "/",
     "display": "standalone",
+    "theme_color": "#257245",
+    "background_color": "#257245",
     "icons": [{
         "src": "images/touch-icon-android.png",
         "sizes": "144x144",
