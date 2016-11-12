@@ -20,14 +20,14 @@ var lexConfig = lex.create({
 });
 
 var httpServer = http.createServer(function (req, res, next) {
-    if (/\/\.well-known\/acme-challenge\/[\w-]+/.test(req.url)) {
-        next();
-    } else {
-        res.writeHead(302, {
+    // if (/\/\.well-known\/acme-challenge\/[\w-]+/.test(req.url)) {
+    //     next();
+    // } else {
+        res.writeHead(301, {
             'Location': `https://${req.headers.host}:${httpsPort}${req.url}`
         });
         res.end();
-    }
+    // }
 });
 var httpsServer = https.createServer(lexConfig.httpsOptions, lexConfig.middleware(app));
 
