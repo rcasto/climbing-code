@@ -10,15 +10,15 @@ var httpPort = process.env.PORT || 3000;
 var httpServer = http.createServer(app);
 
 // Middleware
-app.use(function (req, res, next) {
-    if (req.path === '/manifest.json') {
-        console.log('app manifest header set!');
-        res.set('Content-Type', 'application/manifest+json');
-    } else {
-        console.log('Passthrough:', req.path);
-    }
-    next();
-});
+// app.use(function (req, res, next) {
+//     if (req.path === '/manifest.json') {
+//         console.log('app manifest header set!');
+//         res.set('Content-Type', 'application/manifest+json');
+//     } else {
+//         console.log('Passthrough:', req.path);
+//     }
+//     next();
+// });
 app.use(express.static(path.join(__dirname, 'public')));
 // serve ACME challenges for Let's Encrypt
 app.use('/.well-known', express.static(path.join(__dirname, '.well-known')));
