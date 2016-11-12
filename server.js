@@ -30,8 +30,9 @@ app.use(function (req, res, next) {
     }
     next();
 });
-app.use(express.static(path.join(__dirname, '.well-known')));
 app.use(express.static(path.join(__dirname, 'public')));
+// serve ACME challenges
+app.use('/.well-known', express.static(path.join(__dirname, '.well-known')));
 
 app.get('/', function (req, res) {
     res.sendFile('index.html');
