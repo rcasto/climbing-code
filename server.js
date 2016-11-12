@@ -8,8 +8,8 @@ var lex = require('letsencrypt-express');
 var config = require('./config.json');
 
 var app = express();
-var httpPort = 80;
-var httpsPort = 443;
+var httpPort = 8000 || 80;
+var httpsPort = 3000 || 443;
 
 // Let's Encrypt
 var lexConfig = lex.create({
@@ -19,16 +19,15 @@ var lexConfig = lex.create({
     approveDomains: [config.domain]
 });
 
-var httpServer = http.createServer(function (req, res, next) {
-    // if (/\/\.well-known\/acme-challenge\/[\w-]+/.test(req.url)) {
-    //     next();
-    // } else {
-        res.writeHead(301, {
-            'Location': `https://${req.headers.host}:${httpsPort}${req.url}`
-        });
-        res.end();
-    // }
-});
+function redirectToSSL(req, res, next) {
+    // /\/\.well-known\/acme-challenge\/[\w-]+/ - save in case
+    res.writeHead(301, {
+        'Location': `https://${req.headers.host}:${httpsPort}${req.url}`
+    });
+    res.end();
+}
+
+var httpServer = http.createServer(app);
 var httpsServer = https.createServer(lexConfig.httpsOptions, lexConfig.middleware(app));
 
 // Middleware
