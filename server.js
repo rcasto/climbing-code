@@ -21,7 +21,7 @@ var lexConfig = lex.create({
 
 var httpServer = http.createServer(function (req, res, next) {
     if (/\/\.well-known\/acme-challenge\/[\w-]+/.test(req.url)) {
-        console.log('!!!!!!!   ACME CHALLENGE !!!!!');
+        next();
     } else {
         res.writeHead(302, {
             'Location': `https://${req.headers.host}:${httpsPort}${req.url}`
