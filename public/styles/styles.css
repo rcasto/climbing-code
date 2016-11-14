@@ -1,5 +1,51 @@
+*, *:before, *:after {
+    box-sizing: border-box;
+}
+
 body {
-    background-color: #fef;
     min-height: 100%;
     position: relative;
+}
+
+#peer-name-button {
+    margin: 0 auto;
+    padding: 12px;
+    display: block;
+}
+
+#chat-window {
+    height: 350px;
+    overflow: scroll;
+}
+.chat-input-container {
+    position: relative;
+    height: 32px;
+}
+#chat-input {
+    float: left;
+    width: calc(100% - 120px);
+    height: 100%;
+}
+#send-button {
+    float: left;
+    width: 120px;
+    height: 100%;
+}
+.chat-message {
+    width: 75%;
+    padding: 6px;
+    margin-top: 6px;
+}
+.chat-message::first-child {
+    margin-top: 0;
+}
+.message-sent {
+    background-color: #afd3b4;
+    float: left;
+    text-align: left;
+}
+.message-received {
+    background-color: #73d184;
+    float: right;
+    text-align: right;
 }

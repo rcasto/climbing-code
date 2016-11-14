@@ -12,9 +12,21 @@
     <body>
         <h1>WebTech</h1>
 
-        <audio controls src="/sounds/test.mp3"></audio>
+        <button id="peer-name-button" disabled>Ready to Connect!</button>
 
+        <div id="chat" visible="false">
+            <div id="chat-window">
+                <div>Messages will appear here once you are connected</div>
+            </div>
+            <div class="chat-input-container">
+                <input id="chat-input" type="text" disabled>
+                <button id="send-button" disabled>Send</button>
+            </div>
+        </div>
+
+        <script src="/webrtc-adapter/out/adapter.js"></script>
         <script src="/scripts/helpers.js"></script>
+        <script src="/scripts/request.js"></script>
         <script src="/scripts/webTech.js"></script>
     </body>
 </html>
