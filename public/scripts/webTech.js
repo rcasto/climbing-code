@@ -94,6 +94,7 @@
         div.className += isSender ? "message-sent" : "message-received";
         div.appendChild(text);
         chatWindow.appendChild(div);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
     // Register Service Worker if supported
