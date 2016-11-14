@@ -66,6 +66,7 @@
         dataChannel.onmessage = function (msg) {
             showMessage(msg.data);
         };
+        dataChannel.onerror = onError;
     }
 
     function isReady() {
