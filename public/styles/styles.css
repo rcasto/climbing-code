@@ -62,8 +62,10 @@ h1 {
 .message-sent {
     background-color: #afd3b4;
     float: left;
+    margin-left: 6px;
 }
 .message-received {
     background-color: #73d184;
     float: right;
+    margin-right: 6px;
 }
