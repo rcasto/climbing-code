@@ -123,33 +123,33 @@
 
                 if (!rtcPeer) {
                     initWebRTC(config.iceServers, true);
+                }
 
-                    if (msg) {
-                        switch (msg.type) {
-                            case 'offer':
-                                rtcPeer.setRemoteDescription(msg.sdp).then(function () {
-                                    return rtcPeer.createAnswer();
-                                }).then(function (sdp) {
-                                    return rtcPeer.setLocalDescription(sdp);
-                                }).then(function () {
-                                    ws.send(JSON.stringify({
-                                        type: 'answer',
-                                        sdp: rtcPeer.localDescription
-                                    }));
-                                }).catch(onError);
-                                break;
-                            case 'answer':
-                                rtcPeer.setRemoteDescription(msg.sdp).catch(onError);
-                                break;
-                            case 'candidate':
-                                rtcPeer.addIceCandidate(msg.candidate).catch(onError);
-                                break;
-                            default:
-                                onError({
-                                    msg: 'Invalid message type:',
-                                    data: msg
-                                });
-                        }
+                if (msg && !rtcDataChannel) {
+                    switch (msg.type) {
+                        case 'offer':
+                            rtcPeer.setRemoteDescription(msg.sdp).then(function () {
+                                return rtcPeer.createAnswer();
+                            }).then(function (sdp) {
+                                return rtcPeer.setLocalDescription(sdp);
+                            }).then(function () {
+                                ws.send(JSON.stringify({
+                                    type: 'answer',
+                                    sdp: rtcPeer.localDescription
+                                }));
+                            }).catch(onError);
+                            break;
+                        case 'answer':
+                            rtcPeer.setRemoteDescription(msg.sdp).catch(onError);
+                            break;
+                        case 'candidate':
+                            rtcPeer.addIceCandidate(msg.candidate).catch(onError);
+                            break;
+                        default:
+                            onError({
+                                msg: 'Invalid message type:',
+                                data: msg
+                            });
                     }
                 }
             };
