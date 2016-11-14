@@ -7,15 +7,15 @@
     var isConnected = false;
 
     // Set up some DOM stuff
-    var peerNameButton = document.getElementById('peer-name-button');
+    var connectButton = document.getElementById('connect-button');
     var chatContainer = document.getElementById('chat');
     var chatWindow = document.getElementById('chat-window');
     var chatInput = document.getElementById('chat-input');
     var sendButton = document.getElementById('send-button');
+    var connectionStatus = document.getElementById('connection-status');
 
     // This button should only be enabled when ready conditions are met
-    peerNameButton && (peerNameButton.onclick = function () {
-        peerNameButton.disabled = true;
+    connectButton && (connectButton.onclick = function () {
         initWebRTC(config.iceServers);
     });
 
@@ -77,6 +77,7 @@
 
     function onError(error) {
         console.error(JSON.stringify(error));
+        connectionStatus.innerHTML = "Error occurred";
     }
 
     function sendMessage(isSender) {
@@ -117,7 +118,7 @@
             ws = new WebSocket('wss://' + config.domain);
             ws.onopen = function () {
                 console.log('Web Socket connection opened');
-                peerNameButton.disabled = !isReady();
+                connectButton.disabled = !isReady();
             };
             ws.onmessage = function (event) {
                 var msg = Helpers.tryParseJSON(event.data);
@@ -163,6 +164,8 @@
         document.addEventListener('channelReady', function () {
             isConnected = true;
             chatInput.disabled = false;
+            connectionStatus.innerHTML = "Connected";
+            connectButton.disabled = true;
 
             chatInput.onkeydown = function (event) {
                 if (event.keyCode === 13) {

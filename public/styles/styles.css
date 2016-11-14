@@ -7,7 +7,26 @@ body {
     position: relative;
 }
 
-#peer-name-button {
+h1 {
+    text-align: center;
+}
+
+h3 {
+    text-decoration: underline;
+}
+
+.webrtc-heading {
+    margin-bottom: 6px;
+}
+.webrtc-heading h3 {
+    display: inline-block;
+    margin: 0;
+}
+.webrtc-heading span {
+    float: right;
+}
+
+#connect-button {
     margin: 0 auto;
     padding: 12px;
     display: block;

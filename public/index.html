@@ -10,19 +10,25 @@
         <link rel="stylesheet" href="/styles/styles.css">
     </head>
     <body>
-        <h1>WebTech</h1>
+        <h1>Web Tech</h1>
 
-        <button id="peer-name-button" disabled>Ready to Connect!</button>
+        <div>
+            <div class="webrtc-heading">
+                <h3>WebRTC Demo</h3>
+                <span id="connection-status">Not Connected</span>
+            </div>
 
-        <div id="chat" visible="false">
-            <div id="chat-window">
-                <div>Messages will appear here once you are connected</div>
+            <button id="connect-button" disabled>Ready to Connect!</button>
+
+            <div id="chat" visible="false">
+                <p>Messages will appear below when you start chatting</p>
+                <div id="chat-window"></div>
+                <div class="chat-input-container">
+                    <input id="chat-input" type="text" value="" placeholder="Say something here" disabled>
+                    <button id="send-button" disabled>Send</button>
+                </div>
             </div>
-            <div class="chat-input-container">
-                <input id="chat-input" type="text" value="" placeholder="Say something here" disabled>
-                <button id="send-button" disabled>Send</button>
-            </div>
-        </div>
+        <div>
 
         <script src="/webrtc-adapter/out/adapter.js"></script>
         <script src="/scripts/helpers.js"></script>
