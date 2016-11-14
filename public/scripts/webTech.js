@@ -4,6 +4,7 @@
     var rtcPeer = null;
     var rtcDataChannel = null;
     var config = null;
+    var isConnected = false;
 
     // Set up some DOM stuff
     var peerNameButton = document.getElementById('peer-name-button');
@@ -125,7 +126,7 @@
                     initWebRTC(config.iceServers, true);
                 }
 
-                if (msg && !rtcDataChannel) {
+                if (msg && !isConnected) {
                     switch (msg.type) {
                         case 'offer':
                             rtcPeer.setRemoteDescription(msg.sdp).then(function () {
@@ -160,6 +161,7 @@
         }).catch(onError);
 
         document.addEventListener('channelReady', function () {
+            isConnected = true;
             chatInput.disabled = false;
 
             chatInput.onkeydown = function (event) {
