@@ -16,6 +16,8 @@ body {
 #chat-window {
     height: 350px;
     overflow: scroll;
+    margin-top: 12px;
+    margin-bottom: 12px;
 }
 .chat-input-container {
     position: relative;
@@ -23,8 +25,9 @@ body {
 }
 #chat-input {
     float: left;
-    width: calc(100% - 120px);
+    width: calc(100% - 126px);
     height: 100%;
+    margin-right: 6px;
 }
 #send-button {
     float: left;
@@ -42,10 +45,8 @@ body {
 .message-sent {
     background-color: #afd3b4;
     float: left;
-    text-align: left;
 }
 .message-received {
     background-color: #73d184;
     float: right;
-    text-align: right;
 }

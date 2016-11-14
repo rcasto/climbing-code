@@ -14,6 +14,7 @@
 
     // This button should only be enabled when ready conditions are met
     peerNameButton && (peerNameButton.onclick = function () {
+        peerNameButton.disabled = true;
         initWebRTC(config.iceServers);
     });
 
@@ -75,6 +76,13 @@
 
     function onError(error) {
         console.error(JSON.stringify(error));
+    }
+
+    function sendMessage(isSender) {
+        rtcDataChannel.send(chatInput.value);
+        showMessage(chatInput.value, true);
+        chatInput.value = "";
+        sendButton.disabled = true;
     }
 
     function showMessage(msg, isSender) {
@@ -153,12 +161,17 @@
 
         document.addEventListener('channelReady', function () {
             chatInput.disabled = false;
-            sendButton.disabled = false;
 
+            chatInput.onkeydown = function (event) {
+                if (event.keyCode === 13) {
+                    sendMessage(true);
+                }
+            };
+            chatInput.oninput = function () {
+                sendButton.disabled = !chatInput.value;
+            };
             sendButton.onclick = function () {
-                rtcDataChannel.send(chatInput.value);
-                showMessage(chatInput.value, true);
-                chatInput.value = "";
+                sendMessage(true);
             };
         });
     }
