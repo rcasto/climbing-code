@@ -24,51 +24,35 @@
             iceServers: servers
         };
         var rtcDataChannelConfig = {
+            label: 'tic-tac-toe',
             ordered: true
         };
-        rtcPeer = new RTCPeerConnection(rtcPeerConfig);
-        rtcPeer.onicecandidate = function (event) {
-            console.log('Got ICE candidate:', event.candidate);
-            if (event.candidate) {
-                ws.send(JSON.stringify({
-                    type: 'candidate',
-                    candidate: event.candidate
-                }));
-            }
-        };
-        if (initiatedRemotely) {
-            rtcPeer.ondatachannel = function (event) {
-                console.log('Data Channel event',
-                    JSON.stringify(event));
-                rtcDataChannel = event.channel;
-                setupDataChannel(rtcDataChannel);
-            };
-        } else {
-            rtcPeer.onnegotiationneeded = function () {
-                console.log('We need to negotiate!');
-                rtcPeer.createOffer().then(function (sdp) {
-                    return rtcPeer.setLocalDescription(sdp);
-                }).then(function () {
-                    ws.send(JSON.stringify({
-                        type: 'offer',
-                        sdp: rtcPeer.localDescription
-                    }));
-                }).catch(onError);
-            };
-            rtcDataChannel = rtcPeer.createDataChannel('tic-tac-toe', 
-                rtcDataChannelConfig);
-            setupDataChannel(rtcDataChannel);
-        }
-    }
 
-    function setupDataChannel(dataChannel) {
-        dataChannel.onopen = function () {
-            document.dispatchEvent(new Event('channelReady'));
+        var rtcPeerHandlers = {
+            ondatachannel: initiatedRemotely ? 
+                function (event) {
+                    console.log('Data Channel event',
+                        JSON.stringify(event));
+                    rtcDataChannel = event.channel;
+                    Helpers.addHandlers(rtcDataChannel, rtcDataChannelHandlers);
+                } : null
         };
-        dataChannel.onmessage = function (msg) {
-            showMessage(msg.data);
+        var rtcDataChannelHandlers = {
+            onopen: function () {
+                document.dispatchEvent(new Event('channelReady'));
+            },
+            onmessage:function (msg) {
+                showMessage(msg.data);
+            },
+            onerror: onError
         };
-        dataChannel.onerror = onError;
+
+        rtcPeer = new WebRTCPeer(relaySignal, rtcPeerConfig, rtcPeerHandlers);
+
+        if (!initiatedRemotely) {
+            rtcPeer.giveOffer();
+            rtcDataChannel = rtcPeer.addChannel(rtcDataChannelConfig, rtcDataChannelHandlers);
+        }
     }
 
     function isReady() {
@@ -78,6 +62,10 @@
     function onError(error) {
         console.error(JSON.stringify(error));
         connectionStatus.innerHTML = "Error occurred";
+    }
+
+    function relaySignal(signal) {
+        ws && ws.send(JSON.stringify(signal));
     }
 
     function sendMessage(isSender) {
@@ -116,7 +104,7 @@
             config = data;
 
             // Web Socket setup
-            ws = new WebSocket('wss://' + config.domain);
+            ws = new WebSocket('ws://' + config.domain);
             ws.onopen = function () {
                 console.log('Web Socket connection opened');
                 connectButton.disabled = !isReady();
@@ -131,22 +119,13 @@
                 if (msg && !isConnected) {
                     switch (msg.type) {
                         case 'offer':
-                            rtcPeer.setRemoteDescription(msg.sdp).then(function () {
-                                return rtcPeer.createAnswer();
-                            }).then(function (sdp) {
-                                return rtcPeer.setLocalDescription(sdp);
-                            }).then(function () {
-                                ws.send(JSON.stringify({
-                                    type: 'answer',
-                                    sdp: rtcPeer.localDescription
-                                }));
-                            }).catch(onError);
+                            rtcPeer.acceptOffer(msg.data);
                             break;
                         case 'answer':
-                            rtcPeer.setRemoteDescription(msg.sdp).catch(onError);
+                            rtcPeer.acceptAnswer(msg.data);
                             break;
                         case 'candidate':
-                            rtcPeer.addIceCandidate(msg.candidate).catch(onError);
+                            rtcPeer.acceptCandidate(msg.data);
                             break;
                         default:
                             onError({

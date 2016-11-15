@@ -23,11 +23,28 @@ var Helpers = (function () {
         }
     }
 
+    function addHandlers(target, handlers) {
+        for (var handleName in handlers) {
+            if (handleName in target && handlers[handleName]) {
+                if (target[handleName]) {
+                    var oldHandle = target[handleName];
+                    target[handleName] = function () {
+                        oldHandle();
+                        handlers[handleName];
+                    };
+                } else {
+                    target[handleName] = handlers[handleName];
+                }
+            }
+        }
+    }
+
     return {
         isServiceWorkerSupported: isServiceWorkerSupported,
         isWebSocketSupported: isWebSocketSupported,
         isWebRTCSupported: isWebRTCSupported,
-        tryParseJSON: tryParseJSON
+        tryParseJSON: tryParseJSON,
+        addHandlers: addHandlers
     };
 
 }());
