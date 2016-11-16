@@ -1,6 +1,7 @@
 var path = require('path');
 var http = require('http');
 var express = require('express');
+var compression = require('compression');
 var webSocketServer = require('ws').Server;
 var config = require('./config.json');
 
@@ -11,12 +12,16 @@ var wss = new webSocketServer({
 });
 var app = express();
 
+// Use gzip compression
+app.use(compression());
+
 // Setup static route for website assets
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'node_modules')));
 
 // Serve ACME challenges for Let's Encrypt
 app.use('/.well-known', express.static(path.join(__dirname, '.well-known')));
+
 app.get('/', function (req, res) {
     res.sendFile('index.html');
 });
