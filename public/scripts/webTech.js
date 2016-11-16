@@ -1,10 +1,11 @@
 (function () {
     var ws = null;
     var name = null;
-    var rtcPeer = null;
     var rtcDataChannel = null;
     var config = null;
     var isConnected = false;
+    var peers = {};
+    var idCounter = 0;
 
     // Set up some DOM stuff
     var connectButton = document.getElementById('connect-button');
@@ -16,15 +17,15 @@
 
     // This button should only be enabled when ready conditions are met
     connectButton && (connectButton.onclick = function () {
-        initWebRTC(config.iceServers);
+        createPeer(config.iceServers);
     });
 
-    function initWebRTC(servers, initiatedRemotely) {
+    function createPeer(servers, initiatedRemotely) {
         var rtcPeerConfig = {
             iceServers: servers
         };
         var rtcDataChannelConfig = {
-            label: 'tic-tac-toe',
+            label: 'chat-room',
             ordered: true
         };
 
@@ -47,12 +48,22 @@
             onerror: onError
         };
 
-        rtcPeer = new WebRTCPeer(relaySignal, rtcPeerConfig, rtcPeerHandlers);
+        var id = idCounter;
+        var peer = new WebRTCPeer(function (signal) {
+            signal.id = id;
+            relaySignal(signal);
+        }, rtcPeerConfig, rtcPeerHandlers);
+        peers[id] = peer;
+
+        // Increment peer id
+        idCounter++;
 
         if (!initiatedRemotely) {
-            rtcPeer.giveOffer();
-            rtcDataChannel = rtcPeer.addChannel(rtcDataChannelConfig, rtcDataChannelHandlers);
+            peer.giveOffer();
+            rtcDataChannel = peer.addChannel(rtcDataChannelConfig, rtcDataChannelHandlers);
         }
+
+        return peer;
     }
 
     function isReady() {
@@ -112,20 +123,20 @@
             ws.onmessage = function (event) {
                 var msg = Helpers.tryParseJSON(event.data);
 
-                if (!rtcPeer) {
-                    initWebRTC(config.iceServers, true);
-                }
-
                 if (msg && !isConnected) {
                     switch (msg.type) {
                         case 'offer':
-                            rtcPeer.acceptOffer(msg.data);
+                            var peer = createPeer(config.iceServers, true);
+                            peer.acceptOffer(msg.data);
                             break;
                         case 'answer':
-                            rtcPeer.acceptAnswer(msg.data);
+                            console.log('accept answer');
+                            // peers[msg.name].acceptAnswer(msg.data);
                             break;
                         case 'candidate':
-                            rtcPeer.acceptCandidate(msg.data);
+                            peers[msg.name].acceptCandidate(msg.data);
+                            break;
+                        case 'close':
                             break;
                         default:
                             onError({
@@ -159,5 +170,10 @@
                 sendMessage(true);
             };
         });
+
+        // Tell others that you are leaving
+        window.onbeforeunload = function () {
+
+        };
     }
 }());

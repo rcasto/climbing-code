@@ -35,9 +35,19 @@ wss.on('connection', function (ws) {
 
     ws.on('message', function (msg) {
         console.log('Message Received');
-        // Relay message to other clients
-        wss.clients.forEach(function (client) {
-            if (client !== ws) {
+        sendToAllButSender(ws, msg);
+    });
+    ws.on('close', function () {
+        console.log('Client disconneted');
+    });
+    ws.on('error', function (error) {
+        console.error('Web Socket error:', JSON.stringify(error));
+    });
+});
+
+function sendToAllButSender(sender, msg) {
+    wss.clients.forEach(function (client) {
+            if (client !== sender) {
                 client.send(msg, function (error) {
                     if (error) {
                         console.error('Error relaying message',
@@ -45,9 +55,5 @@ wss.on('connection', function (ws) {
                     }
                 });
             }
-        });
     });
-    ws.on('error', function (error) {
-        console.error('Web Socket error:', JSON.stringify(error));
-    });
-});
+}
