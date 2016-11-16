@@ -104,7 +104,7 @@
             config = data;
 
             // Web Socket setup
-            ws = new WebSocket('ws://' + config.domain);
+            ws = new WebSocket('wss://' + config.domain);
             ws.onopen = function () {
                 console.log('Web Socket connection opened');
                 connectButton.disabled = !isReady();
