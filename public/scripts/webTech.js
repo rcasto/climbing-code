@@ -104,7 +104,9 @@
             config = data;
 
             // Web Socket setup
-            ws = new WebSocket('wss://' + config.domain);
+            var protocol = config.isSecure ? 'wss://' : 'ws://';
+            
+            ws = new WebSocket(protocol + config.domain);
             ws.onopen = function () {
                 console.log('Web Socket connection opened');
                 connectButton.disabled = !isReady();
@@ -146,6 +148,9 @@
             chatInput.disabled = false;
             connectionStatus.innerHTML = "Connected";
             connectButton.disabled = true;
+
+            // Focus the chat input
+            chatInput.focus();
 
             chatInput.onkeydown = function (event) {
                 if (event.keyCode === 13) {
