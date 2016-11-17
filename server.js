@@ -12,6 +12,14 @@ var wss = new webSocketServer({
 });
 var app = express();
 
+// Set up environment configuration
+if (process.env.NODE_ENV === 'production') {
+    config.isSecure = true;
+} else {
+    config.domain = 'localhost:' + httpPort;
+    config.isSecure = false;
+}
+
 // Use gzip compression
 app.use(compression());
 
