@@ -7,9 +7,15 @@ body {
     position: relative;
 }
 
-h1 {
+.header {
     text-align: center;
+}
+.header h1 {
     text-decoration: underline;
+    margin-bottom: 0;
+}
+.header p {
+    margin: 0 0 12px 0;
 }
 
 .webrtc-heading {
