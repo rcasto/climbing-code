@@ -2,8 +2,14 @@ var path = require('path');
 var http = require('http');
 var express = require('express');
 var compression = require('compression');
+var debug = require('debug');
 var webSocketServer = require('ws').Server;
 var config = require('./config.json');
+
+var error = debug('app:error');
+var logger = debug('dev:log');
+
+logger.log = console.log.bind(console);
 
 var httpPort = process.env.PORT || 3000;
 var httpServer = http.createServer();
@@ -39,21 +45,21 @@ app.get('/api/config', function (req, res) {
 
 httpServer.on('request', app);
 httpServer.listen(httpPort, function () {
-    console.log('Http server listening on port', httpPort);
+    logger('Http server listening on port', httpPort);
 });
 
 // Handle WebSocket Messages
 wss.on('connection', function (ws) {
-    console.log('Client connected', wss.clients.length);
+    logger('Client connected', wss.clients.length);
 
     ws.on('message', function (msg) {
-        console.log('Message Received');
+        logger('Message Received');
         // Relay message to other clients
         wss.clients.forEach(function (client) {
             if (client !== ws) {
                 client.send(msg, function (error) {
                     if (error) {
-                        console.error('Error relaying message',
+                        error('Error relaying message',
                             JSON.stringify(error));
                     }
                 });
@@ -61,6 +67,6 @@ wss.on('connection', function (ws) {
         });
     });
     ws.on('error', function (error) {
-        console.error('Web Socket error:', JSON.stringify(error));
+        error('Web Socket error:', JSON.stringify(error));
     });
 });
