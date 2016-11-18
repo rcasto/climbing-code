@@ -2,8 +2,16 @@ var path = require('path');
 var http = require('http');
 var express = require('express');
 var compression = require('compression');
+var debug = require('debug');
 var webSocketServer = require('ws').Server;
+var uuid = require('uuid');
+
 var config = require('./config.json');
+
+var error = debug('app:error');
+var logger = debug('dev:log');
+
+logger.log = console.log.bind(console);
 
 var httpPort = process.env.PORT || 3000;
 var httpServer = http.createServer();
@@ -11,6 +19,14 @@ var wss = new webSocketServer({
     server: httpServer
 });
 var app = express();
+
+// Set up environment configuration
+if (process.env.NODE_ENV === 'production') {
+    config.isSecure = true;
+} else {
+    config.domain = 'localhost:' + httpPort;
+    config.isSecure = false;
+}
 
 // Use gzip compression
 app.use(compression());
@@ -31,12 +47,23 @@ app.get('/api/config', function (req, res) {
 
 httpServer.on('request', app);
 httpServer.listen(httpPort, function () {
-    console.log('Http server listening on port', httpPort);
+    logger('Http server listening on port', httpPort);
 });
 
 // Handle WebSocket Messages
 wss.on('connection', function (ws) {
-    console.log('Client connected', wss.clients.length);
+    logger('Client connected', wss.clients.length);
+
+    // Generate id to represent this client and sent it to them
+    ws.send(JSON.stringify({
+        type: 'id',
+        data: uuid()
+    }), function (error) {
+        if (error) {
+            error('Failed to send id assignment to client',
+                JSON.stringify(error));
+        }
+    });
 
     ws.on('message', function (msg) {
         console.log('Message Received');
@@ -52,13 +79,20 @@ wss.on('connection', function (ws) {
 
 function sendToAllButSender(sender, msg) {
     wss.clients.forEach(function (client) {
-            if (client !== sender) {
-                client.send(msg, function (error) {
-                    if (error) {
-                        console.error('Error relaying message',
-                            JSON.stringify(error));
-                    }
-                });
-            }
+        if (client !== sender) {
+            logger('Message Received');
+
+            // Relay message to other clients
+            wss.clients.forEach(function (client) {
+                if (client !== ws) {
+                    client.send(msg, function (error) {
+                        if (error) {
+                            error('Error relaying message',
+                                JSON.stringify(error));
+                        }
+                    });
+                }
+            });
+        }
     });
 }

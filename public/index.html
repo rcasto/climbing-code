@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
     <head>
-        <title>Web Tech</title>
+        <title>Climbing Code - Home of web demos and more</title>
 
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="Home of web tech demos, projects, and information">
+        <meta name="description" content="Home of web demos, projects, and various other stuff.  The web is awesome, don't forget">
 
         <link rel="manifest" href="/manifest.json">
         <link rel="stylesheet" href="/styles/styles.css">
     </head>
     <body>
-        <h1>Web Tech</h1>
+        <div class="header">
+            <h1>Climbing Code: Where tech advances allow us to climb higher</h1>
+            <hr>
+        </div>
 
         <div>
-            <div class="webrtc-heading">
-                <h3>WebRTC Demo - P2P Anonymous Chat</h3>
+            <div class="webrtc-heading clearfix">
+                <h2>WebRTC Demo - P2P Anonymous Chat</h3>
                 <span id="connection-status">Not Connected</span>
             </div>
 
@@ -25,7 +28,7 @@
                 <p>Messages will appear below(&#8595;) when you start chatting</p>
                 <div id="chat-window"></div>
                 <div class="chat-input-container">
-                    <input id="chat-input" type="text" value="" placeholder="Say something here" disabled>
+                    <input id="chat-input" type="text" value="" aria-label="Chat input field" placeholder="Say something here" disabled>
                     <button id="send-button" disabled>Send</button>
                 </div>
             </div>

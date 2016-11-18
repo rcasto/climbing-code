@@ -4,8 +4,11 @@
     var rtcDataChannel = null;
     var config = null;
     var isConnected = false;
+
     var peers = {};
     var idCounter = 0;
+    
+    var id = null;
 
     // Set up some DOM stuff
     var connectButton = document.getElementById('connect-button');
@@ -76,6 +79,8 @@
     }
 
     function relaySignal(signal) {
+        // Attach id to signal
+        signal.id = id;
         ws && ws.send(JSON.stringify(signal));
     }
 
@@ -115,7 +120,9 @@
             config = data;
 
             // Web Socket setup
-            ws = new WebSocket('ws://' + config.domain);
+            var protocol = config.isSecure ? 'wss://' : 'ws://';
+            
+            ws = new WebSocket(protocol + config.domain);
             ws.onopen = function () {
                 console.log('Web Socket connection opened');
                 connectButton.disabled = !isReady();
@@ -125,6 +132,9 @@
 
                 if (msg && !isConnected) {
                     switch (msg.type) {
+                        case 'id':
+                            id = msg.data;
+                            break;
                         case 'offer':
                             var peer = createPeer(config.iceServers, true);
                             peer.acceptOffer(msg.data);
@@ -157,6 +167,9 @@
             chatInput.disabled = false;
             connectionStatus.innerHTML = "Connected";
             connectButton.disabled = true;
+
+            // Focus the chat input
+            chatInput.focus();
 
             chatInput.onkeydown = function (event) {
                 if (event.keyCode === 13) {

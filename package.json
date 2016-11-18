@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
+    "debug": "DEBUG=* node --inspect server.js",
+    "dev": "DEBUG=* node server.js",
+    "deploy": "git push azure production:master",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
@@ -14,7 +17,9 @@
   "license": "ISC",
   "dependencies": {
     "compression": "^1.6.2",
+    "debug": "^2.3.2",
     "express": "^4.14.0",
+    "uuid": "^3.0.0",
     "webrtc-adapter": "^2.0.6",
     "ws": "^1.1.1"
   }

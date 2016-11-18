@@ -7,20 +7,27 @@ body {
     position: relative;
 }
 
-h1 {
+.header {
     text-align: center;
-    text-decoration: underline;
+}
+.header h1 {
+    margin: 0;
 }
 
 .webrtc-heading {
     margin-bottom: 6px;
 }
-.webrtc-heading h3 {
-    display: inline-block;
+.webrtc-heading h2 {
     margin: 0;
+    float: left;
 }
 .webrtc-heading span {
     float: right;
+}
+.webrtc-heading:after {
+    content: "";
+    display: table;
+    clear: both;
 }
 
 #connect-button {
