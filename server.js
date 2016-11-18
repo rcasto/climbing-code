@@ -4,6 +4,8 @@ var express = require('express');
 var compression = require('compression');
 var debug = require('debug');
 var webSocketServer = require('ws').Server;
+var uuid = require('uuid');
+
 var config = require('./config.json');
 
 var error = debug('app:error');
@@ -52,8 +54,15 @@ httpServer.listen(httpPort, function () {
 wss.on('connection', function (ws) {
     logger('Client connected', wss.clients.length);
 
+    // Generate id to represent this client and sent it to them
+    ws.send(JSON.stringify({
+        type: 'id',
+        data: uuid()
+    }));
+
     ws.on('message', function (msg) {
         logger('Message Received');
+
         // Relay message to other clients
         wss.clients.forEach(function (client) {
             if (client !== ws) {

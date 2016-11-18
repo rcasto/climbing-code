@@ -5,6 +5,7 @@
     var rtcDataChannel = null;
     var config = null;
     var isConnected = false;
+    var id = null;
 
     // Set up some DOM stuff
     var connectButton = document.getElementById('connect-button');
@@ -65,6 +66,8 @@
     }
 
     function relaySignal(signal) {
+        // Attach id to signal
+        signal.id = id;
         ws && ws.send(JSON.stringify(signal));
     }
 
@@ -120,6 +123,9 @@
 
                 if (msg && !isConnected) {
                     switch (msg.type) {
+                        case 'id':
+                            id = msg.data;
+                            break;
                         case 'offer':
                             rtcPeer.acceptOffer(msg.data);
                             break;
