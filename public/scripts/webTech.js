@@ -1,14 +1,17 @@
 (function () {
     var ws = null;
-    var name = null;
-    var rtcDataChannel = null;
     var config = null;
-    var isConnected = false;
 
     var peers = {};
-    var idCounter = 0;
-    
     var id = null;
+
+    var rtcPeerConfig = {
+        iceServers: null
+    };
+    var rtcDataChannelConfig = {
+        label: 'chat-room',
+        ordered: true
+    };
 
     // Set up some DOM stuff
     var connectButton = document.getElementById('connect-button');
@@ -20,53 +23,25 @@
 
     // This button should only be enabled when ready conditions are met
     connectButton && (connectButton.onclick = function () {
-        createPeer(config.iceServers);
+        connectButton.disabled = true;
+        relaySignal({
+            type: 'connect'
+        });
     });
 
-    function createPeer(servers, initiatedRemotely) {
-        var rtcPeerConfig = {
-            iceServers: servers
-        };
-        var rtcDataChannelConfig = {
-            label: 'chat-room',
-            ordered: true
-        };
-
-        var rtcPeerHandlers = {
-            ondatachannel: initiatedRemotely ? 
-                function (event) {
-                    console.log('Data Channel event',
-                        JSON.stringify(event));
-                    rtcDataChannel = event.channel;
-                    Helpers.addHandlers(rtcDataChannel, rtcDataChannelHandlers);
-                } : null
-        };
-        var rtcDataChannelHandlers = {
-            onopen: function () {
-                document.dispatchEvent(new Event('channelReady'));
-            },
-            onmessage:function (msg) {
-                showMessage(msg.data);
-            },
-            onerror: onError
-        };
-
-        var id = idCounter;
-        var peer = new WebRTCPeer(function (signal) {
-            signal.id = id;
-            relaySignal(signal);
-        }, rtcPeerConfig, rtcPeerHandlers);
-        peers[id] = peer;
-
-        // Increment peer id
-        idCounter++;
-
-        if (!initiatedRemotely) {
-            peer.giveOffer();
-            rtcDataChannel = peer.addChannel(rtcDataChannelConfig, rtcDataChannelHandlers);
+    function createPeer(name, servers) {
+        if (!peers[name]) {
+            peers[name] = {
+                rtc: new WebRTCPeer(relaySignal, rtcPeerConfig, {
+                    ondatachannel: function (event) {
+                        peers[name].channel = event.channel;
+                        addDataChannelHandlers(peers[name].channel, name);
+                    }
+                }),
+                channel: null
+            };
         }
-
-        return peer;
+        return peers[name];
     }
 
     function isReady() {
@@ -76,16 +51,40 @@
     function onError(error) {
         console.error(JSON.stringify(error));
         connectionStatus.innerHTML = "Error occurred";
+        chatInput.disabled = true;
+        connectButton.disabled = false;
+    }
+
+    function cleanUpAndReport(id, error) {
+        console.log('Cleaning up:', id);
+        delete peers[id];
+        onError(error);
     }
 
     function relaySignal(signal) {
-        // Attach id to signal
-        signal.id = id;
         ws && ws.send(JSON.stringify(signal));
     }
 
+    function addDataChannelHandlers(channel, id) {
+        channel.onopen = function () {
+            document.dispatchEvent(new Event('channelReady'));
+        };
+        channel.onmessage = function (msg) {
+            // send message to other data channels
+            for (var peerName in peers) {
+                if (peerName !== id) {
+                    peers[peerName].channel.send(msg.data);
+                }
+            }
+            showMessage(msg.data);
+        };
+        channel.onerror = onError;
+    }
+
     function sendMessage(isSender) {
-        rtcDataChannel.send(chatInput.value);
+        Object.keys(peers).forEach(function (peer) {
+            peers[peer].channel.send(chatInput.value);
+        });
         showMessage(chatInput.value, true);
         chatInput.value = "";
         sendButton.disabled = true;
@@ -118,6 +117,7 @@
             return Helpers.tryParseJSON(data);
         }).then(function (data) {
             config = data;
+            rtcPeerConfig.iceServers = config.iceServers;
 
             // Web Socket setup
             var protocol = config.isSecure ? 'wss://' : 'ws://';
@@ -125,28 +125,49 @@
             ws = new WebSocket(protocol + config.domain);
             ws.onopen = function () {
                 console.log('Web Socket connection opened');
-                connectButton.disabled = !isReady();
             };
             ws.onmessage = function (event) {
                 var msg = Helpers.tryParseJSON(event.data);
 
-                if (msg && !isConnected) {
+                if (msg) {
                     switch (msg.type) {
                         case 'id':
                             id = msg.data;
+                            connectButton.disabled = !isReady();
+                            break;
+                        case 'connect':
+                            console.log('Connection info:', msg);
+                            var peer = createPeer(msg.target, config.iceServers);
+                            peer.rtc.giveOffer({
+                                target: msg.target
+                            }).catch(onError);
+                            peer.rtc.addChannel(rtcDataChannelConfig).then(function (channel) {
+                                peer.channel = channel;
+                                addDataChannelHandlers(peer.channel, msg.target);
+                            });
                             break;
                         case 'offer':
-                            var peer = createPeer(config.iceServers, true);
-                            peer.acceptOffer(msg.data);
+                            var peer = createPeer(msg.id, config.iceServers);
+                            peer.rtc.acceptOffer(msg.data, {
+                                target: msg.id
+                            }).then(function () {
+                                console.log('Offer accepted successfully');
+                            }, cleanUpAndReport.bind(null, msg.id));
                             break;
                         case 'answer':
-                            console.log('accept answer');
-                            // peers[msg.name].acceptAnswer(msg.data);
+                            peers[msg.id] && peers[msg.id].rtc
+                                .acceptAnswer(msg.data)
+                                .then(function () {
+                                    console.log('Answer accepted successfully');
+                                }, cleanUpAndReport.bind(null, msg.id));
                             break;
                         case 'candidate':
-                            peers[msg.name].acceptCandidate(msg.data);
+                            peers[msg.id] && peers[msg.id].rtc
+                                .acceptCandidate(msg.data)
+                                .catch(cleanUpAndReport.bind(null, msg.id));
                             break;
                         case 'close':
+                            delete peers[msg.id];
                             break;
                         default:
                             onError({
@@ -156,17 +177,12 @@
                     }
                 }
             };
-            ws.onclose = function () {
-                console.log('Web socket closed');
-            };
             ws.onerror = onError;
         }).catch(onError);
 
         document.addEventListener('channelReady', function () {
-            isConnected = true;
             chatInput.disabled = false;
             connectionStatus.innerHTML = "Connected";
-            connectButton.disabled = true;
 
             // Focus the chat input
             chatInput.focus();
@@ -183,10 +199,5 @@
                 sendMessage(true);
             };
         });
-
-        // Tell others that you are leaving
-        window.onbeforeunload = function () {
-
-        };
     }
 }());

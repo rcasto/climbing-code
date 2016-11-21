@@ -24,6 +24,8 @@ var Helpers = (function () {
     }
 
     function addHandlers(target, handlers) {
+        target = target || {};
+        handlers = handlers || {};
         for (var handleName in handlers) {
             if (handleName in target && handlers[handleName]) {
                 if (target[handleName]) {
