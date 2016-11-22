@@ -16,65 +16,73 @@
 function WebRTCPeer(signaler, options, handlers) {
     console.log('Peer Created');
 
+    options = options || {};
+    handlers = handlers || {};
+
     this.signaler = signaler;
     this.peerConnection = new RTCPeerConnection(options);
 
+    this.peerConnection.onsignalingstatechange = function (event) {
+        console.log('Signal state:', this.signalingState);
+    };
+
     Helpers.addHandlers(this.peerConnection, handlers);
 }
-WebRTCPeer.prototype.acceptOffer = function (offer) {
+WebRTCPeer.prototype.acceptOffer = function (offer, config) {
     var self = this;
-    this.peerConnection.setRemoteDescription(offer).then(function () {
+    config = config || {};
+    return this.peerConnection.setRemoteDescription(offer).then(function () {
         return self.peerConnection.createAnswer();
     }).then(function (answer) {
         return self.peerConnection.setLocalDescription(answer);
     }).then(function () {
-        self.signaler({
+        self.signaler(Object.assign(config, {
             type: 'answer',
             data: self.peerConnection.localDescription
-        });
-    }).catch(onError);
+        }));
+    });
 };
 WebRTCPeer.prototype.acceptAnswer = function (answer) {
     console.log('Accepting Answer');
 
-    this.peerConnection.setRemoteDescription(answer).catch(onError);
+    return this.peerConnection.setRemoteDescription(answer);
 };
 WebRTCPeer.prototype.acceptCandidate = function (candidate) {
     console.log('Accepting Candidate:', candidate);
 
-    this.peerConnection.addIceCandidate(candidate).catch(onError);
+    return this.peerConnection.addIceCandidate(candidate);
 };
 WebRTCPeer.prototype.addChannel = function (config, handlers) {
     console.log('Channel Added');
-
-    var channel = this.peerConnection.createDataChannel(config.label, config);
-    Helpers.addHandlers(channel, handlers);
-    return channel;
+    return new Promise(function (resolve, reject) {
+        var channel = this.peerConnection.createDataChannel(config.label, config);
+        Helpers.addHandlers(channel, handlers);
+        resolve(channel);
+    }.bind(this));
 };
-WebRTCPeer.prototype.giveOffer = function () {
+WebRTCPeer.prototype.giveOffer = function (config) {
     var self = this;
-    this.peerConnection.onnegotiationneeded = function () {
-        this.createOffer().then(function (sdp) {
-            return self.peerConnection.setLocalDescription(sdp);
-        }).then(function () {
-            console.log('Offer Sent');
-            self.signaler({
-                type: 'offer',
-                data: self.peerConnection.localDescription
-            });
-        }).catch(onError);
-    };
-    this.peerConnection.onicecandidate = function (event) {
-        if (event.candidate) {
-            self.signaler({
-                type: 'candidate',
-                data: event.candidate
-            });
-        }
-    };
+    config = config || {};
+    return new Promise(function (resolve, reject) {
+        this.peerConnection.onnegotiationneeded = function () {
+            this.createOffer().then(function (sdp) {
+                return self.peerConnection.setLocalDescription(sdp);
+            }).then(function () {
+                console.log('Offer Sent');
+                self.signaler(Object.assign(config, {
+                    type: 'offer',
+                    data: self.peerConnection.localDescription
+                }));
+                resolve();
+            }, reject);
+        };
+        this.peerConnection.onicecandidate = function (event) {
+            if (event.candidate) {
+                self.signaler({
+                    type: 'candidate',
+                    data: event.candidate
+                });
+            }
+        };
+    }.bind(this));
 };
-
-/* Debugging */
-function onError(error) {
-    console.error('Error:', JSON.stringify(error));
-}
