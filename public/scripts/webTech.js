@@ -20,6 +20,7 @@
     var chatInput = document.getElementById('chat-input');
     var sendButton = document.getElementById('send-button');
     var connectionStatus = document.getElementById('connection-status');
+    var messageTemplate = document.getElementById('message-template').content;
 
     // This button should only be enabled when ready conditions are met
     connectButton && (connectButton.onclick = function () {
@@ -34,8 +35,7 @@
             peers[name] = {
                 rtc: new WebRTCPeer(relaySignal, rtcPeerConfig, {
                     ondatachannel: function (event) {
-                        peers[name].channel = event.channel;
-                        addDataChannelHandlers(peers[name].channel, name);
+                        addDataChannelHandlers(event.channel, name);
                     }
                 }),
                 channel: null
@@ -65,38 +65,60 @@
         ws && ws.send(JSON.stringify(signal));
     }
 
-    function addDataChannelHandlers(channel, id) {
+    function addDataChannelHandlers(channel, name) {
         channel.onopen = function () {
             document.dispatchEvent(new Event('channelReady'));
-        };
-        channel.onmessage = function (msg) {
-            // send message to other data channels
-            for (var peerName in peers) {
-                if (peerName !== id) {
-                    peers[peerName].channel.send(msg.data);
-                }
-            }
-            showMessage(msg.data);
+            peers[name].channel = channel;
+
+            channel.onmessage = function (msg) {
+                var message = Helpers.tryParseJSON(msg.data);
+                showMessage(message, false);
+                sendMessage(message);
+            };
         };
         channel.onerror = onError;
     }
 
-    function sendMessage(isSender) {
+    function sendMessage(msg) {
+        var senderId = msg.id;
+
+        // Message has new sender now (this peer), adjust
+        msg.id = id;
+
         Object.keys(peers).forEach(function (peer) {
-            peers[peer].channel.send(chatInput.value);
+            // don't send it back to the sender peer
+            if (peer !== senderId) {
+                if (peers[peer].channel) {
+                    peers[peer].channel.send(JSON.stringify(msg));
+                } else {
+                    console.log('Not ready to send yet');
+                }
+            }
         });
-        showMessage(chatInput.value, true);
-        chatInput.value = "";
-        sendButton.disabled = true;
     }
 
     function showMessage(msg, isSender) {
-        var div = document.createElement('div');
-        var text = document.createTextNode(msg);
-        div.className = "chat-message ";
-        div.className += isSender ? "message-sent" : "message-received";
-        div.appendChild(text);
-        chatWindow.appendChild(div);
+        var text = document.createTextNode(msg.data);
+        var timestamp = document.createTextNode(
+            (new Date(msg.timestamp)).toLocaleTimeString('en-US'));
+        var messageTemplateClone = messageTemplate.cloneNode(true);
+        var messageBubble = messageTemplateClone.querySelector('.chat-message-bubble');
+        messageBubble.className += ' ' + (isSender ? "message-sent" : "message-received");
+        messageBubble.querySelector('.chat-message').appendChild(text);
+        messageBubble.querySelector('.chat-message-timestamp').appendChild(timestamp);
+        chatWindow.appendChild(message);
+    }
+
+    function sendAndShowText(text) {
+        var msg = {
+            data: text,
+            timestamp: (new Date()).getTime(),
+            id: id
+        };
+        sendMessage(msg);
+        showMessage(msg, true);
+        chatInput.value = "";
+        sendButton.disabled = true;
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
@@ -189,14 +211,14 @@
 
             chatInput.onkeydown = function (event) {
                 if (event.keyCode === 13) {
-                    sendMessage(true);
+                    sendAndShowText(chatInput.value);
                 }
             };
             chatInput.oninput = function () {
                 sendButton.disabled = !chatInput.value;
             };
             sendButton.onclick = function () {
-                sendMessage(true);
+                sendAndShowText(chatInput.value);
             };
         });
     }

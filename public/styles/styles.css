@@ -58,21 +58,30 @@ body {
     width: 120px;
     height: 100%;
 }
-.chat-message {
+
+.chat-message-bubble {
     width: 75%;
-    padding: 6px;
     margin-top: 6px;
+    padding: 12px;
 }
-.chat-message::first-child {
-    margin-top: 0;
+.chat-message-bubble:last-child {
+    margin-bottom: 6px;
 }
-.message-sent {
+.chat-message-bubble.message-sent {
     background-color: #afd3b4;
     float: left;
     margin-left: 6px;
 }
-.message-received {
+.chat-message-bubble.message-received {
     background-color: #73d184;
     float: right;
     margin-right: 6px;
+}
+
+.chat-message {
+    font-size: 24px;
+}
+.chat-message-timestamp {
+    font-size: 12px;
+    text-align: right;
 }
