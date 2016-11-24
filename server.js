@@ -4,30 +4,21 @@ var express = require('express');
 var compression = require('compression');
 var webSocketServer = require('ws').Server;
 
-var config = require('./config.json');
 var helpers = require('./lib/helpers');
 var socketServer = require('./lib/socketServer');
 var appRouter = require('./lib/appRouter');
 
 var loggers = helpers.createLoggers('app');
-var error = loggers.error;
 var logger = loggers.log;
 
 // Set up environment configuration
-var httpPort = process.env.PORT || 3000;
-if (process.env.NODE_ENV === 'production') {
-    config.isSecure = true;
-} else {
-    config.domain = 'localhost:' + httpPort;
-    config.isSecure = false;
-}
+var httpPort = process.env.PORT || 80;
 
 var httpServer = http.createServer();
 var wss = new webSocketServer({
     server: httpServer
 });
 var app = express();
-var appRouter = require('./lib/appRouter')(config);
 
 // Add socket Handling
 socketServer(wss);

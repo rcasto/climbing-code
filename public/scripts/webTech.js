@@ -106,7 +106,8 @@
         messageBubble.className += ' ' + (isSender ? "message-sent" : "message-received");
         messageBubble.querySelector('.chat-message').appendChild(text);
         messageBubble.querySelector('.chat-message-timestamp').appendChild(timestamp);
-        chatWindow.appendChild(message);
+        chatWindow.appendChild(messageTemplateClone);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
     function sendAndShowText(text) {
@@ -119,7 +120,6 @@
         showMessage(msg, true);
         chatInput.value = "";
         sendButton.disabled = true;
-        chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
     // Register Service Worker if supported
@@ -143,8 +143,9 @@
 
             // Web Socket setup
             var protocol = config.isSecure ? 'wss://' : 'ws://';
+            var connectionString = protocol + config.domain + ':' + config.port;
             
-            ws = new WebSocket(protocol + config.domain);
+            ws = new WebSocket(connectionString);
             ws.onopen = function () {
                 console.log('Web Socket connection opened');
             };
