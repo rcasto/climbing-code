@@ -32,7 +32,14 @@
                     <button id="send-button" disabled>Send</button>
                 </div>
             </div>
-        <div>
+        </div>
+
+        <template id="message-template">
+            <div class="chat-message-bubble">
+                <div class="chat-message"></div>
+                <div class="chat-message-timestamp"></div>
+            </div>
+        </template>
 
         <script src="/webrtc-adapter/out/adapter.js"></script>
         <script src="/scripts/helpers.js"></script>
