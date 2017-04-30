@@ -1,4 +1,5 @@
 import 'webrtc-adapter/out/adapter.js';
+import rtcStyle from '../../styles/rtc-styles.css';
 import WebRTCPeer from './webRTC';
 import {
     isServiceWorkerSupported,

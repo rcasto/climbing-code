@@ -4,12 +4,12 @@
   "description": "playing around with new web api's and tech",
   "main": "server.js",
   "scripts": {
-    "build": "npm run clean && npm run move && webpack --config webpack.config.js",
+    "commonBuild": "npm run clean && npm run move",
+    "build": "npm run commonBuild && webpack -p --config webpack.config.js",
+    "buildDev": "npm run commonBuild && webpack --config webpack.config.js",
     "move": "cd src && cp ./public/*.* ./public/styles/*.css ./public/images/*.png ../dist --parents",
-    "start": "node server.js",
-    "debug": "set DEBUG=* PORT=3000 node --inspect server.js",
-    "dev": "set DEBUG=* && set PORT=3000 && npm run start",
-    "deploy": "git push azure production:master",
+    "start": "npm run build && node server.js",
+    "startDev": "set DEBUG=* && set PORT=3000 && npm run buildDev && node server.js",
     "clean": "rm -rf dist/*"
   },
   "engines": {
@@ -26,6 +26,8 @@
     "ws": "^1.1.1"
   },
   "devDependencies": {
+    "css-loader": "^0.28.0",
+    "style-loader": "^0.16.1",
     "webpack": "^2.4.1"
   }
 }

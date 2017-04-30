@@ -4,8 +4,6 @@ var express = require('express');
 var compression = require('compression');
 var webSocketServer = require('ws').Server;
 
-process.env.DEBUG='*';
-
 var helpers = require('./lib/helpers');
 var socketServer = require('./lib/socketServer');
 var appRouter = require('./lib/appRouter');
