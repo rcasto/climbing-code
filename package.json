@@ -2,7 +2,7 @@
   "name": "climbing-code",
   "version": "1.0.0",
   "description": "playing around with new web api's and tech",
-  "main": "server.js",
+  "main": "main.js",
   "scripts": {
     "commonBuild": "npm run clean && npm run move",
     "build": "npm run commonBuild && webpack --config webpack.config.js",

@@ -3,3 +3,5 @@ npm-debug.log
 config.json
 web.config
 dist
+deploy.cmd
+.deployment
