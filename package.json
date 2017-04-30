@@ -1,14 +1,16 @@
 {
-  "name": "web-tech",
+  "name": "climbing-code",
   "version": "1.0.0",
   "description": "playing around with new web api's and tech",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
+    "build": "npm run clean && npm run move && webpack --config webpack.config.js",
+    "move": "cd src && cp ./public/*.* ./public/styles/*.css ./public/images/*.png ../dist --parents",
     "start": "node server.js",
-    "debug": "DEBUG=* PORT=3000 node --inspect server.js",
-    "dev": "DEBUG=* PORT=3000 node server.js",
+    "debug": "set DEBUG=* PORT=3000 node --inspect server.js",
+    "dev": "set DEBUG=* && set PORT=3000 && npm run start",
     "deploy": "git push azure production:master",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -rf dist/*"
   },
   "engines": {
     "node": "7.1.0"
@@ -22,5 +24,8 @@
     "uuid": "^3.0.0",
     "webrtc-adapter": "^2.0.6",
     "ws": "^1.1.1"
+  },
+  "devDependencies": {
+    "webpack": "^2.4.1"
   }
 }

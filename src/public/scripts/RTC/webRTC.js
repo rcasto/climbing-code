@@ -86,3 +86,4 @@ WebRTCPeer.prototype.giveOffer = function (config) {
         };
     }.bind(this));
 };
+export default WebRTCPeer;

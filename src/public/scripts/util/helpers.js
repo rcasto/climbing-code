@@ -1,0 +1,48 @@
+function isServiceWorkerSupported() {
+    return navigator && navigator.serviceWorker;
+}
+
+function isWebSocketSupported() {
+    return window && window.WebSocket;
+}
+
+function isWebRTCSupported() {
+    return window && 
+            window.RTCPeerConnection &&
+            window.RTCSessionDescription &&
+            window.RTCIceCandidate;
+}
+
+function tryParseJSON(json) {
+    try {
+        return JSON.parse(json);
+    } catch(error) {
+        return null;
+    }
+}
+
+function addHandlers(target, handlers) {
+    target = target || {};
+    handlers = handlers || {};
+    for (var handleName in handlers) {
+        if (handleName in target && handlers[handleName]) {
+            if (target[handleName]) {
+                var oldHandle = target[handleName];
+                target[handleName] = function () {
+                    oldHandle();
+                    handlers[handleName];
+                };
+            } else {
+                target[handleName] = handlers[handleName];
+            }
+        }
+    }
+}
+
+export {
+    isServiceWorkerSupported,
+    isWebSocketSupported,
+    isWebRTCSupported,
+    tryParseJSON,
+    addHandlers
+};

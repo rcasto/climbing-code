@@ -4,6 +4,8 @@ var express = require('express');
 var compression = require('compression');
 var webSocketServer = require('ws').Server;
 
+process.env.DEBUG='*';
+
 var helpers = require('./lib/helpers');
 var socketServer = require('./lib/socketServer');
 var appRouter = require('./lib/appRouter');
@@ -27,7 +29,7 @@ socketServer(wss);
 app.use(compression());
 
 // Setup static route for website assets
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'dist/public')));
 app.use(express.static(path.join(__dirname, 'node_modules')));
 
 // Serve ACME challenges for Let's Encrypt
