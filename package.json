@@ -5,12 +5,12 @@
   "main": "server.js",
   "scripts": {
     "commonBuild": "npm run clean && npm run move",
-    "build": "npm run commonBuild && webpack -p --config webpack.config.js",
-    "buildDev": "npm run commonBuild && webpack --config webpack.config.js",
+    "build": "npm run commonBuild && webpack --config webpack.config.js",
     "move": "cd src && cp ./public/*.* ./public/styles/*.css ./public/images/*.png ../dist --parents",
-    "start": "npm run build && node server.js",
-    "startDev": "set DEBUG=* && set PORT=3000 && npm run buildDev && node server.js",
-    "clean": "rm -rf dist/*"
+    "start": "node server.js",
+    "dev": "set DEBUG=* && set PORT=3000",
+    "clean": "rm -rf dist/*",
+    "azure": "npm run commonBuild && webpack -p --config webpack.config.js"
   },
   "engines": {
     "node": "7.7.4"
