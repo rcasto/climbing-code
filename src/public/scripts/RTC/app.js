@@ -76,11 +76,11 @@ function relaySignal(signal) {
 }
 
 function addDataChannelHandlers(channel, name) {
-    channel.onopen = function () {
+    channel.onopen = () => {
         document.dispatchEvent(new Event('channelReady'));
         peers[name].channel = channel;
 
-        channel.onmessage = function (msg) {
+        channel.onmessage = (msg) => {
             var message = tryParseJSON(msg.data);
             showMessage(message, false);
             sendMessage(message);
@@ -95,7 +95,7 @@ function sendMessage(msg) {
     // Message has new sender now (this peer), adjust
     msg.id = id;
 
-    Object.keys(peers).forEach(function (peer) {
+    Object.keys(peers).forEach((peer) => {
         // don't send it back to the sender peer
         if (peer !== senderId) {
             if (peers[peer].channel) {
@@ -136,18 +136,19 @@ function sendAndShowText(text) {
 if (isServiceWorkerSupported()) {
     navigator.serviceWorker.register('serviceWorker.js', {
         scope: '/'
-    }).then(function (registration) {
-        console.log('Service worker registered:', JSON.stringify(registration));
-    }, onError);
+    })
+    .then((registration) => 
+        console.log('Service worker registered:', JSON.stringify(registration)))
+    .catch(onError);
 }
 
 if (isWebSocketSupported() &&
     isWebRTCSupported()) 
 {
     // Fetch the client configuration
-    Get('/api/config').then(function (data) {
-        return tryParseJSON(data);
-    }).then(function (data) {
+    Get('/api/config')
+        .then((data) => tryParseJSON(data))
+        .then((data) => {
         config = data;
         rtcPeerConfig.iceServers = config.iceServers;
 
@@ -156,12 +157,9 @@ if (isWebSocketSupported() &&
         var connectionString = protocol + config.domain + ':' + config.port;
         
         ws = new WebSocket(connectionString);
-        ws.onopen = function () {
-            console.log('Web Socket connection opened');
-        };
-        ws.onmessage = function (event) {
+        ws.onopen = () => console.log('Web Socket connection opened');
+        ws.onmessage = (event) => {
             var msg = tryParseJSON(event.data);
-
             if (msg) {
                 switch (msg.type) {
                     case 'id':
@@ -174,7 +172,7 @@ if (isWebSocketSupported() &&
                         peer.rtc.giveOffer({
                             target: msg.target
                         }).catch(onError);
-                        peer.rtc.addChannel(rtcDataChannelConfig).then(function (channel) {
+                        peer.rtc.addChannel(rtcDataChannelConfig).then((channel) => {
                             peer.channel = channel;
                             addDataChannelHandlers(peer.channel, msg.target);
                         });
@@ -183,21 +181,23 @@ if (isWebSocketSupported() &&
                         var peer = createPeer(msg.id, config.iceServers);
                         peer.rtc.acceptOffer(msg.data, {
                             target: msg.id
-                        }).then(function () {
-                            console.log('Offer accepted successfully');
-                        }, cleanUpAndReport.bind(null, msg.id));
+                        }).then(
+                            () => console.log('Offer accepted successfully'), 
+                            (error) => cleanUpAndReport(msg.id, error)
+                        );
                         break;
                     case 'answer':
                         peers[msg.id] && peers[msg.id].rtc
                             .acceptAnswer(msg.data)
-                            .then(function () {
-                                console.log('Answer accepted successfully');
-                            }, cleanUpAndReport.bind(null, msg.id));
+                            .then(
+                                () => console.log('Answer accepted successfully'), 
+                                (error) => cleanUpAndReport(msg.id, error)
+                            );
                         break;
                     case 'candidate':
                         peers[msg.id] && peers[msg.id].rtc
                             .acceptCandidate(msg.data)
-                            .catch(cleanUpAndReport.bind(null, msg.id));
+                            .catch((error) => cleanUpAndReport(msg.id, error));
                         break;
                     case 'close':
                         delete peers[msg.id];
@@ -211,25 +211,22 @@ if (isWebSocketSupported() &&
             }
         };
         ws.onerror = onError;
-    }).catch(onError);
+    })
+    .catch(onError);
 
-    document.addEventListener('channelReady', function () {
+    document.addEventListener('channelReady', () => {
         chatInput.disabled = false;
         connectionStatus.innerHTML = "Connected";
 
         // Focus the chat input
         chatInput.focus();
 
-        chatInput.onkeydown = function (event) {
+        chatInput.onkeydown = (event) => {
             if (event.keyCode === 13) {
                 sendAndShowText(chatInput.value);
             }
         };
-        chatInput.oninput = function () {
-            sendButton.disabled = !chatInput.value;
-        };
-        sendButton.onclick = function () {
-            sendAndShowText(chatInput.value);
-        };
+        chatInput.oninput = () => sendButton.disabled = !chatInput.value;
+        sendButton.onclick = () => sendAndShowText(chatInput.value);
     });
 }

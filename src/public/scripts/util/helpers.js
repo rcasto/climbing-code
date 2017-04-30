@@ -8,9 +8,9 @@ function isWebSocketSupported() {
 
 function isWebRTCSupported() {
     return window && 
-            window.RTCPeerConnection &&
-            window.RTCSessionDescription &&
-            window.RTCIceCandidate;
+           window.RTCPeerConnection &&
+           window.RTCSessionDescription &&
+           window.RTCIceCandidate;
 }
 
 function tryParseJSON(json) {
@@ -21,9 +21,7 @@ function tryParseJSON(json) {
     }
 }
 
-function addHandlers(target, handlers) {
-    target = target || {};
-    handlers = handlers || {};
+function addHandlers(target = {}, handlers = {}) {
     for (var handleName in handlers) {
         if (handleName in target && handlers[handleName]) {
             if (target[handleName]) {

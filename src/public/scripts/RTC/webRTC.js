@@ -28,62 +28,56 @@ function WebRTCPeer(signaler, options, handlers) {
 
     Helpers.addHandlers(this.peerConnection, handlers);
 }
-WebRTCPeer.prototype.acceptOffer = function (offer, config) {
-    var self = this;
-    config = config || {};
-    return this.peerConnection.setRemoteDescription(offer).then(function () {
-        return self.peerConnection.createAnswer();
-    }).then(function (answer) {
-        return self.peerConnection.setLocalDescription(answer);
-    }).then(function () {
-        self.signaler(Object.assign(config, {
-            type: 'answer',
-            data: self.peerConnection.localDescription
-        }));
-    });
+WebRTCPeer.prototype.acceptOffer = function (offer, config = {}) {
+    return this.peerConnection.setRemoteDescription(offer)
+        .then(() => this.peerConnection.createAnswer())
+        .then((answer) => this.peerConnection.setLocalDescription(answer))
+        .then(() => {
+            this.signaler(Object.assign(config, {
+                type: 'answer',
+                data: this.peerConnection.localDescription
+            }));
+        });
 };
 WebRTCPeer.prototype.acceptAnswer = function (answer) {
     console.log('Accepting Answer');
-
     return this.peerConnection.setRemoteDescription(answer);
 };
 WebRTCPeer.prototype.acceptCandidate = function (candidate) {
     console.log('Accepting Candidate:', candidate);
-
     return this.peerConnection.addIceCandidate(candidate);
 };
 WebRTCPeer.prototype.addChannel = function (config, handlers) {
     console.log('Channel Added');
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
         var channel = this.peerConnection.createDataChannel(config.label, config);
         Helpers.addHandlers(channel, handlers);
         resolve(channel);
-    }.bind(this));
+    });
 };
-WebRTCPeer.prototype.giveOffer = function (config) {
-    var self = this;
-    config = config || {};
-    return new Promise(function (resolve, reject) {
-        this.peerConnection.onnegotiationneeded = function () {
-            this.createOffer().then(function (sdp) {
-                return self.peerConnection.setLocalDescription(sdp);
-            }).then(function () {
-                console.log('Offer Sent');
-                self.signaler(Object.assign(config, {
-                    type: 'offer',
-                    data: self.peerConnection.localDescription
-                }));
-                resolve();
-            }, reject);
+WebRTCPeer.prototype.giveOffer = function (config = {}) {
+    return new Promise((resolve, reject) => {
+        this.peerConnection.onnegotiationneeded = () => {
+            this.createOffer()
+                .then((sdp) => this.peerConnection.setLocalDescription(sdp))
+                .then(() => {
+                    console.log('Offer Sent');
+                    this.signaler(Object.assign(config, {
+                        type: 'offer',
+                        data: this.peerConnection.localDescription
+                    }));
+                    resolve();
+                })
+                .catch(reject);
         };
-        this.peerConnection.onicecandidate = function (event) {
+        this.peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
-                self.signaler({
+                this.signaler({
                     type: 'candidate',
                     data: event.candidate
                 });
             }
         };
-    }.bind(this));
+    });
 };
 export default WebRTCPeer;

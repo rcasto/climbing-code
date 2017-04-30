@@ -1,13 +1,11 @@
-var soundCloudAPIBase = 'https://api.soundcloud.com';
-
-self.addEventListener('install', function (event) {
+self.addEventListener('install', (event) => {
     console.log('Installing service worker');
 });
 
-self.addEventListener('activate', function (event) {
+self.addEventListener('activate', (event) => {
     console.log('Service worker now active');
 });
 
-self.addEventListener('fetch', function (event) {
+self.addEventListener('fetch', (event) => {
     console.log('Fetch received:', JSON.stringify(event));
 });
